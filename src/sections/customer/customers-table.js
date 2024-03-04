@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import {
   Avatar,
@@ -12,87 +13,109 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  Typography
+  Typography,
+  Button,
+  
 } from '@mui/material';
 import { Scrollbar } from 'src/components/scrollbar';
 import { getInitials } from 'src/utils/get-initials';
 
-export const CustomersTable = (props) => {
-  const {
-    count = 0,
-    items = [],
-    onDeselectAll,
-    onDeselectOne,
-    onPageChange = () => {},
-    onRowsPerPageChange,
-    onSelectAll,
-    onSelectOne,
-    page = 0,
-    rowsPerPage = 0,
-    selected = []
-  } = props;
+export const CustomersTable = () => {
+  const [data, setData] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5); 
+ 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://remotebackend-2.onrender.com/api/v1/getCompany');
+        const userData = await response.json();
+        console.log(userData.data)
+        setData(userData.data);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
 
-  const selectedSome = (selected.length > 0) && (selected.length < items.length);
-  const selectedAll = (items.length > 0) && (selected.length === items.length);
+    fetchData();
+  }, []);
 
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`https://remotebackend-2.onrender.com/api/v1/deleteCompany/${id}`, {
+        method: 'DELETE',
+      });
+  
+      if (response.ok) {
+        // Remove the deleted item from the list
+        setData(prevData => prevData.filter(item => item._id !== id));
+        setSelected(prevSelected => prevSelected.filter(itemId => itemId !== id));
+        alert("Deleted Successfully")
+        console.log(`Item with ID ${id} deleted successfully.`);
+      } else {
+        console.error('Failed to delete item:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const toggleSelect = (id) => {
+    setSelected((prevSelected) => {
+      if (prevSelected.includes(id)) {
+        return prevSelected.filter((itemId) => itemId !== id);
+      } else {
+        return [...prevSelected, id];
+      }
+    });
+  };
+
+  const isSelected = (id) => selected.includes(id);
+  
   return (
     <Card>
+    
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedAll}
-                    indeterminate={selectedSome}
-                    onChange={(event) => {
-                      if (event.target.checked) {
-                        onSelectAll?.();
-                      } else {
-                        onDeselectAll?.();
-                      }
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  Name
-                </TableCell>
-                <TableCell>
-                  Email
-                </TableCell>
-                <TableCell>
-                  Location
-                </TableCell>
-                <TableCell>
-                  Phone
-                </TableCell>
-                <TableCell>
-                  Signed Up
-                </TableCell>
+                <TableCell>ID</TableCell>
+                <TableCell>COMPANY NAME</TableCell>
+                <TableCell>JOB TYPE</TableCell>
+                <TableCell>EXPECTED SALARY</TableCell>
+                <TableCell>ROLES</TableCell>
+                <TableCell>SKILLS</TableCell>
+                <TableCell>EXPERIENCE</TableCell>
+                <TableCell>APPLY LINK</TableCell>
+                <TableCell>DELETE</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((customer) => {
-                const isSelected = selected.includes(customer.id);
-                const createdAt = format(customer.createdAt, 'dd/MM/yyyy');
+              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((customer) => {
+                const isItemSelected = isSelected(customer._id);
+               
 
                 return (
                   <TableRow
                     hover
-                    key={customer.id}
-                    selected={isSelected}
+                    key={customer._id}
+                    selected={isItemSelected}
                   >
                     <TableCell padding="checkbox">
                       <Checkbox
-                        checked={isSelected}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            onSelectOne?.(customer.id);
-                          } else {
-                            onDeselectOne?.(customer.id);
-                          }
-                        }}
+                        checked={isItemSelected}
+                        onChange={() => toggleSelect(customer._id)}
                       />
                     </TableCell>
                     <TableCell>
@@ -101,25 +124,28 @@ export const CustomersTable = (props) => {
                         direction="row"
                         spacing={2}
                       >
-                        <Avatar src={customer.avatar}>
-                          {getInitials(customer.name)}
+                        <Avatar src={customer.CompanyName}>
+                          {getInitials(customer.CompanyName)}
                         </Avatar>
                         <Typography variant="subtitle2">
-                          {customer.name}
+                          {customer.CompanyName}
                         </Typography>
                       </Stack>
                     </TableCell>
+                    <TableCell>{customer.JobType}</TableCell>
+                    <TableCell>{customer.ExpectedSalary}</TableCell>
+                    <TableCell>{customer.Roles}</TableCell>
+                    <TableCell>{customer.Skills}</TableCell>
+                    <TableCell>{customer.Experience}</TableCell>
+                    <TableCell>{customer.ApplyLink}</TableCell>
                     <TableCell>
-                      {customer.email}
-                    </TableCell>
-                    <TableCell>
-                      {customer.address.city}, {customer.address.state}, {customer.address.country}
-                    </TableCell>
-                    <TableCell>
-                      {customer.phone}
-                    </TableCell>
-                    <TableCell>
-                      {createdAt}
+                    <Button
+    onClick={() => handleDelete(customer._id)}
+    variant="contained"
+    color="error"
+  >
+    Delete
+  </Button>
                     </TableCell>
                   </TableRow>
                 );
@@ -130,9 +156,9 @@ export const CustomersTable = (props) => {
       </Scrollbar>
       <TablePagination
         component="div"
-        count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
+        count={data.length}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}

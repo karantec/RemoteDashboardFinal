@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -8,169 +8,131 @@ import {
   CardHeader,
   Divider,
   TextField,
-  Unstable_Grid2 as Grid
+  Grid
 } from '@mui/material';
-
-const states = [
-  {
-    value: 'alabama',
-    label: 'Alabama'
-  },
-  {
-    value: 'new-york',
-    label: 'New York'
-  },
-  {
-    value: 'san-francisco',
-    label: 'San Francisco'
-  },
-  {
-    value: 'los-angeles',
-    label: 'Los Angeles'
-  }
-];
+import axios from 'axios';
 
 export const AccountProfileDetails = () => {
-  const [values, setValues] = useState({
-    firstName: 'Anika',
-    lastName: 'Visser',
-    email: 'demo@devias.io',
-    phone: '',
-    state: 'los-angeles',
-    country: 'USA'
+  const [jobDetails, setJobDetails] = useState({
+    CompanyName: "",
+    JobType:"",
+    ExpectedSalary:"",
+    Roles:"",
+    Skills:"",
+    Experience:"",
+    ApplyLink:" "
+
   });
 
-  const handleChange = useCallback(
-    (event) => {
-      setValues((prevState) => ({
-        ...prevState,
-        [event.target.name]: event.target.value
-      }));
-    },
-    []
-  );
+  const handleChange = useCallback((event) => {
+    const { name, value } = event.target;
+    setJobDetails((prevJobDetails) => ({
+      ...prevJobDetails,
+      [name]: value
+    }));
+  }, []);
 
-  const handleSubmit = useCallback(
-    (event) => {
-      event.preventDefault();
-    },
-    []
-  );
+  const handleSubmit = useCallback(async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post('https://remotebackend-2.onrender.com/api/v1/createJob', jobDetails);
+      alert('Job posted successfully');
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error posting job:', error);
+      alert('Failed to post job');
+    }
+  }, [jobDetails]);
 
   return (
-    <form
-      autoComplete="off"
-      noValidate
-      onSubmit={handleSubmit}
-    >
+    <form autoComplete="off" noValidate onSubmit={handleSubmit}>
       <Card>
         <CardHeader
           subheader="The information can be edited"
-          title="Profile"
+          title="Post Job"
         />
         <CardContent sx={{ pt: 0 }}>
           <Box sx={{ m: -1.5 }}>
-            <Grid
-              container
-              spacing={3}
-            >
-              <Grid
-                xs={12}
-                md={6}
-              >
+            <Grid container spacing={3}>
+              {/* Render input fields for job details */}
+              {/* Example: */}
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  helperText="Please specify the first name"
-                  label="First name"
-                  name="firstName"
+                  label="Company Name"
+                  name="CompanyName"
                   onChange={handleChange}
+                  value={jobDetails.CompanyName}
                   required
-                  value={values.firstName}
                 />
               </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Last name"
-                  name="lastName"
+                  label="Job Type"
+                  name="JobType"
                   onChange={handleChange}
+                  value={jobDetails.JobType}
                   required
-                  value={values.lastName}
                 />
               </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Email Address"
-                  name="email"
+                  label="Expected Salary"
+                  name="ExpectedSalary"
                   onChange={handleChange}
+                  value={jobDetails.ExpectedSalary}
                   required
-                  value={values.email}
                 />
               </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Phone Number"
-                  name="phone"
+                  label="Roles"
+                  name="Roles"
                   onChange={handleChange}
-                  type="number"
-                  value={values.phone}
+                  value={jobDetails.Roles}
+                  required
                 />
               </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Country"
-                  name="country"
+                  label="Skills"
+                  name="Skills"
                   onChange={handleChange}
+                  value={jobDetails.Skills}
                   required
-                  value={values.country}
                 />
               </Grid>
-              <Grid
-                xs={12}
-                md={6}
-              >
+              <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Select State"
-                  name="state"
+                  label="Experience"
+                  name="Experience"
                   onChange={handleChange}
+                  value={jobDetails.Experience}
                   required
-                  select
-                  SelectProps={{ native: true }}
-                  value={values.state}
-                >
-                  {states.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </TextField>
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Apply Link"
+                  name="ApplyLink"
+                  onChange={handleChange}
+                  value={jobDetails.ApplyLink}
+                  required
+                />
               </Grid>
             </Grid>
           </Box>
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained">
-            Save details
+          <Button type="submit" variant="contained">
+            Post Job
           </Button>
         </CardActions>
       </Card>

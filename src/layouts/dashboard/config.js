@@ -19,7 +19,16 @@ export const items = [
     )
   },
   {
-    title: 'Customers',
+    title: 'Add Jobs',
+    path: '/account',
+    icon: (
+      <SvgIcon fontSize="small">
+        <UserIcon />
+      </SvgIcon>
+    )
+  },
+  {
+    title: 'Jobs',
     path: '/customers',
     icon: (
       <SvgIcon fontSize="small">
