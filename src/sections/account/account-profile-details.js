@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Box,
   Button,
@@ -14,15 +14,18 @@ import axios from 'axios';
 
 export const AccountProfileDetails = () => {
   const [jobDetails, setJobDetails] = useState({
-    CompanyName: "",
-    JobType:"",
-    ExpectedSalary:"",
-    Roles:"",
-    Skills:"",
-    Experience:"",
-    ApplyLink:" "
-
+    CompanyName: '',
+    JobType: '',
+    ExpectedSalary: '',
+    description: '', // Added description field
+    Roles: '',
+    Skills: '',
+    Experience: '',
+    ApplyLink: ''
   });
+
+  const [isParagraphMode, setIsParagraphMode] = useState(false);
+  const descriptionRef = useRef(null);
 
   const handleChange = useCallback((event) => {
     const { name, value } = event.target;
@@ -31,6 +34,31 @@ export const AccountProfileDetails = () => {
       [name]: value
     }));
   }, []);
+
+  const handleDescriptionChange = useCallback(() => {
+    const value = descriptionRef.current.innerText;
+    setJobDetails((prevJobDetails) => ({
+      ...prevJobDetails,
+      description: value
+    }));
+    // Move cursor to the end after content change
+    const range = document.createRange();
+    const selection = window.getSelection();
+    range.selectNodeContents(descriptionRef.current);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }, []);
+
+  const handleToggleParagraphMode = useCallback(() => {
+    setIsParagraphMode((prevMode) => !prevMode);
+  }, []);
+
+  const handleFormatAction = useCallback((action) => {
+    document.execCommand(action, false, null);
+    // After format action, trigger description change
+    handleDescriptionChange();
+  }, [handleDescriptionChange]);
 
   const handleSubmit = useCallback(async (event) => {
     event.preventDefault();
@@ -54,8 +82,6 @@ export const AccountProfileDetails = () => {
         <CardContent sx={{ pt: 0 }}>
           <Box sx={{ m: -1.5 }}>
             <Grid container spacing={3}>
-              {/* Render input fields for job details */}
-              {/* Example: */}
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
@@ -125,6 +151,46 @@ export const AccountProfileDetails = () => {
                   value={jobDetails.ApplyLink}
                   required
                 />
+              </Grid>
+              {/* Formatting buttons */}
+              <Grid item xs={12}>
+                <Box mt={2} mb={2}>
+                  {/* Toggle button for paragraph mode */}
+                  <Button onClick={handleToggleParagraphMode} variant="outlined"  sx={{ mr: 2 }}>
+  {isParagraphMode ? 'Remove Paragraph' : 'Add Paragraph'}
+</Button>
+<Button onClick={() => handleFormatAction('bold')} variant="outlined" sx={{ mr: 2 }}>Bold</Button>
+<Button onClick={() => handleFormatAction('italic')} variant="outlined" sx={{ mr: 1 }}>Italic</Button>
+<Button onClick={() => handleFormatAction('underline')} variant="outlined" sx={{ mr: 1 }}>Underline</Button>
+<Button onClick={() => handleFormatAction('strikeThrough')} variant="outlined" sx={{ mr: 1 }}>Strike</Button>
+<Button onClick={() => handleFormatAction('insertUnorderedList')} variant="outlined" sx={{ mr: 1 }}>Bullet List</Button>
+<Button onClick={() => handleFormatAction('insertOrderedList')} variant="outlined" sx={{ mt: 2 }}>Numbered List</Button>
+
+                  {/* Add more buttons for other formatting actions */}
+                </Box>
+              </Grid>
+              {/* Description as contentEditable div */}
+              <Grid item xs={12}>
+                {/* Description as contentEditable div */}
+                <div
+                  ref={descriptionRef}
+                  contentEditable
+                  className="editable-description"
+                  style={{
+                    border: '1px solid #ccc',
+                    minHeight: '150px',
+                    padding: '5px',
+                    whiteSpace: isParagraphMode ? 'pre-wrap' : 'nowrap',
+                    // Align center
+                  }}
+                  onInput={handleDescriptionChange}
+                >
+                  {isParagraphMode ? (
+                    <p>{jobDetails.description}</p>
+                  ) : (
+                    jobDetails.description
+                  )}
+                </div>
               </Grid>
             </Grid>
           </Box>

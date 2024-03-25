@@ -155,7 +155,7 @@ export const SideNav = (props) => {
               </SvgIcon>
             )}
             fullWidth
-            href="https://letscodejobs.in/"
+            href="https://lets-code.co.in/"
             sx={{ mt: 2 }}
             target="_blank"
             variant="contained"

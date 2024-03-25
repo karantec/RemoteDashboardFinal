@@ -85,19 +85,19 @@ export const Layout = (props) => {
                 sx={{ color: '#15B79E' }}
                 target="_blank"
               >
-                Devias Kit
+                LetCode  Board
               </Box>
             </Typography>
             <Typography
               align="center"
               sx={{ mb: 3 }}
               variant="subtitle1"
-            >
-              A professional kit that comes with ready-to-use MUI components.
+            >The Home for Ambitious
+Engineers
             </Typography>
             <img
               alt=""
-              src="/assets/auth-illustration.svg"
+              src="https://let-scodewebsite.vercel.app/_next/image?url=%2FImage1.png&w=384&q=75"
             />
           </Box>
         </Grid>
